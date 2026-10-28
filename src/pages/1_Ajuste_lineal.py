@@ -5,16 +5,18 @@ from model_fit import ajuste_lineal, funcion_ajuste_lineal, metricas_lineal
 
 # Botones interactivos generales
 def botones(x, y, err_x, err_y):
-    if st.button("Representación de los datos (sin ajuste)"):
+    if st.toggle("Representar los puntos, sin ajuste"):
         fig , ax = plt.subplots()
         ax = plt.errorbar(x, y, xerr=err_x, yerr=err_y, fmt="o")
         st.pyplot(fig)
 
-    on = st.toggle("Realizar ajuste lineal")
-
-    if on:
+    if st.toggle("Realizar ajuste lineal"):
         resultado = ajuste_lineal(x,y)
         modelo = funcion_ajuste_lineal(x, resultado)
+
+        if metricas := st.toggle("Obtener métricas de error"):
+            r2, chi2, chi2red = metricas_lineal(resultado, modelo, y, err_y)
+            st.write(fr"$R^2$ = {r2:.4f}, $\Chi^2$ = {chi2:.4f}, $\Chi^2_{{red}}$ = {chi2red:.4f}")
 
         st.write("Personalización de las gráficas")
 
@@ -36,12 +38,16 @@ def botones(x, y, err_x, err_y):
             xlabel = st.text_input("Eje x", "")
             ylabel = st.text_input("Eje y", "")
         with col_leyenda:
-            ley = st.toggle("¿Quieres una leyenda?")
+            lgrafica = "Ajuste"
+            lpuntos = "Datos"
+            if ley := st.toggle("¿Quieres una leyenda?"):
+                lgrafica = st.text_input("Nombre de la gáfica")
+                lpuntos = st.text_input("Nombre de los puntos")
 
         fig, ax = plt.subplots()
 
-        ax.errorbar(x, y, xerr=err_x, yerr=err_y, color=colorp, fmt="o", markersize=grosorp, label="Datos")
-        ax.plot(x, modelo, color=colorg, linewidth=grosorg, label="Ajuste")
+        ax.errorbar(x, y, xerr=err_x, yerr=err_y, color=colorp, fmt="o", markersize=grosorp, label=lpuntos)
+        ax.plot(x, modelo, color=colorg, linewidth=grosorg, label=lgrafica)
 
         if grid:
             ax.grid(True)
@@ -57,7 +63,7 @@ def botones(x, y, err_x, err_y):
             
         st.pyplot(fig)
 
-
+    
 #Principio de la pagina
 
 st.title("Ajuste Lineal")
